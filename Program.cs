@@ -219,7 +219,7 @@ static async Task<List<string>> FetchModelIds(string apiKey)
     using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
-    var response = await client.GetAsync(GroqModelsUrl);
+    using var response = await client.GetAsync(GroqModelsUrl);
     var body = await response.Content.ReadAsStringAsync();
 
     if (!response.IsSuccessStatusCode)
@@ -264,7 +264,7 @@ static async Task<string> RequestReview(string apiKey, string model, string diff
         messages = new object[]
         {
             new { role = "system", content = systemPrompt },
-            new { role = "user", content = $"Review the diff below:\n\n```diff\n{diff}\n```" },
+            new { role = "user", content = $"Review the diff below:\n\n{FenceDiff(diff)}" },
         },
         temperature = 0.2,
     };
@@ -272,7 +272,7 @@ static async Task<string> RequestReview(string apiKey, string model, string diff
     var json = JsonSerializer.Serialize(requestBody);
     using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-    var response = await client.PostAsync(GroqApiUrl, content);
+    using var response = await client.PostAsync(GroqApiUrl, content);
     var responseBody = await response.Content.ReadAsStringAsync();
 
     if (!response.IsSuccessStatusCode)
@@ -284,6 +284,31 @@ static async Task<string> RequestReview(string apiKey, string model, string diff
         .GetProperty("message")
         .GetProperty("content")
         .GetString() ?? "(empty response)";
+}
+
+// A diff that touches Markdown files carries its own ``` sequences, which would
+// close the fence early and hand the model a mangled prompt. Open with a fence
+// longer than the longest backtick run inside the diff.
+static string FenceDiff(string diff)
+{
+    var longest = 0;
+    var current = 0;
+
+    foreach (var c in diff)
+    {
+        if (c != '`')
+        {
+            current = 0;
+            continue;
+        }
+
+        current++;
+        if (current > longest)
+            longest = current;
+    }
+
+    var fence = new string('`', Math.Max(3, longest + 1));
+    return $"{fence}diff\n{diff}\n{fence}";
 }
 
 static string DescribeApiError(System.Net.HttpStatusCode status, string body)
