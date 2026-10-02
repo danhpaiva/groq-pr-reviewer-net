@@ -3,6 +3,8 @@ namespace GroqPrReviewer;
 /// <summary>Command line arguments, already parsed and defaulted.</summary>
 internal sealed class CliOptions
 {
+    // Open-weight (Apache 2.0) and currently the strongest chat model on Groq.
+    // Run --list-models if this one is ever retired, then pass --model.
     public const string DefaultModel = "openai/gpt-oss-120b";
 
     public bool ShowHelp { get; private init; }
