@@ -427,3 +427,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Local secrets — never commit real API keys.
+# The example file is the template and must stay tracked.
+.env
+.env.*
+!.env.example
