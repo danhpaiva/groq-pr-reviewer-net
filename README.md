@@ -1,10 +1,25 @@
 # groq-pr-reviewer-net
 
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
+[![Model](https://img.shields.io/badge/model-gpt--oss--120b-412991)](https://huggingface.co/openai/gpt-oss-120b)
+[![Weights](https://img.shields.io/badge/weights-Apache--2.0-success)](https://huggingface.co/openai/gpt-oss-120b)
+[![Inference](https://img.shields.io/badge/inference-Groq-F55036)](https://groq.com)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Hacktoberfest](https://img.shields.io/badge/Hacktoberfest-2026-blueviolet)](https://hacktoberfest.com)
+
 A C# (.NET 10) CLI that reviews your `git diff` using an open-weight model
 (`openai/gpt-oss-120b`, Apache 2.0) running on Groq's ultra-fast inference.
 
 Point it at any git repository and it prints a structured code review in your
 terminal — before you open the pull request.
+
+```bash
+dotnet run -- --staged
+```
+
+![A terminal showing a full code review with findings grouped into bugs and correctness, security, performance, and best practices](img/04.png)
+
+_Above: the tool reviewing its own source code._
 
 ## Why open-source AI here?
 
@@ -44,6 +59,8 @@ terminal — before you open the pull request.
    ```
    This reports where the key was loaded from, its length and whether it has the
    expected shape — without ever printing the key itself.
+
+   ![A terminal running dotnet run --check, showing the key source, a length of 56 characters, a valid gsk_ prefix, and the model name](img/01.png)
 
 ## Usage
 
@@ -106,6 +123,25 @@ dogfooding run it claimed `net10.0` was not a valid target framework and that a
 sync-over-async issue in the same pass. Read it the way you would read a
 well-meaning junior reviewer.
 
+## When a model is retired
+
+Hosted model catalogues change. This project was originally built on
+`llama-3.3-70b-versatile`, which was removed from Groq while it was being written:
+
+![A terminal showing a 404 error stating that the model llama-3.3-70b-versatile does not exist, followed by a hint to check the active models and pass --model](img/03.png)
+
+The error tells you what to do next. Ask your key what it can actually reach:
+
+```bash
+dotnet run -- --list-models
+```
+
+![A terminal listing the model ids available on Groq, including openai/gpt-oss-120b and qwen/qwen3.8-27b](img/02.png)
+
+Then pass any of them with `--model`. Because every model sits behind the same
+OpenAI-compatible endpoint, recovering from a deprecation is a flag change, not a
+rewrite — that is the practical payoff of building on open weights.
+
 ## ⚠️ Your diff leaves your machine
 
 The diff is sent verbatim to Groq's API. If your changes contain credentials,
@@ -122,6 +158,16 @@ _(Fittingly, this warning exists because the tool flagged it while reviewing its
   was used.
 - The `.env` file is looked up from the current directory upwards, so the published
   executable finds it too.
+
+## Contributing
+
+Issues and pull requests are welcome. The whole tool is a single `Program.cs`
+with no dependencies beyond the .NET base class library, so it should take about
+ten minutes to read end to end before you change anything.
+
+Good first contributions: support for more providers via a `--provider` flag,
+reviewing a GitHub PR by URL, or a `--lang` flag so the review comes back in your
+own language.
 
 ## License
 
