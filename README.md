@@ -161,9 +161,17 @@ _(Fittingly, this warning exists because the tool flagged it while reviewing its
 
 ## Contributing
 
-Issues and pull requests are welcome. The whole tool is a single `Program.cs`
-with no dependencies beyond the .NET base class library, so it should take about
-ten minutes to read end to end before you change anything.
+Issues and pull requests are welcome. The whole tool is about 300 lines across
+five files, with no dependencies beyond the .NET base class library, so it should
+take about ten minutes to read end to end before you change anything:
+
+| File | Responsibility |
+| --- | --- |
+| `Program.cs` | Entry point: wires the pieces together and handles output |
+| `CliOptions.cs` | Argument parsing and the usage text |
+| `ApiKeyLoader.cs` | Resolves `GROQ_API_KEY` from the environment or `.env` |
+| `GitDiff.cs` | Runs `git diff` and captures its output |
+| `GroqClient.cs` | Talks to Groq: reviews, model listing, error messages |
 
 Good first contributions: support for more providers via a `--provider` flag,
 reviewing a GitHub PR by URL, or a `--lang` flag so the review comes back in your
