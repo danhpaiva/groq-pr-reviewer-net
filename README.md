@@ -82,6 +82,9 @@ dotnet run --project /path/to/groq-pr-reviewer-net -- --repo /another/repo
 # use a different Groq model
 dotnet run --project /path/to/groq-pr-reviewer-net -- --model qwen/qwen3.8-27b
 
+# receive the review in Spanish (supported: en, pt, es, fr, de, ja)
+dotnet run --project /path/to/groq-pr-reviewer-net -- --lang es
+
 # see which models your key can reach
 dotnet run --project /path/to/groq-pr-reviewer-net -- --list-models
 ```
@@ -100,6 +103,7 @@ dotnet publish -c Release -r win-x64 --self-contained -o publish
 | `--diff <file>` | Review a `.diff`/`.patch` file instead of running git |
 | `--repo <path>` | Target repository (default: current directory) |
 | `--model <id>` | Groq model id (default: `openai/gpt-oss-120b`) |
+| `--lang <code>` | Review language: `en`, `pt`, `es`, `fr`, `de`, or `ja` (default: `en`; unknown codes warn on stderr and use English) |
 | `--check` | Validate the API key setup without calling the API |
 | `--list-models` | List the model ids available to your key |
 | `--help`, `-h` | Show help |
@@ -115,6 +119,14 @@ The CLI sends the diff to the model via Groq and prints a review organised into:
 
 Diffs longer than 60,000 characters are truncated so they fit the model's context
 window, and you get a warning on stderr when that happens.
+
+## Tests
+
+Run the language selection and prompt tests with:
+
+```bash
+dotnet test tests/GroqPrReviewer.Tests/GroqPrReviewer.Tests.csproj
+```
 
 Treat the output as a fast second opinion, not as truth. An open model with a
 knowledge cutoff will occasionally flag things that are not real — in our own
