@@ -11,6 +11,9 @@ if (options.ShowHelp)
     return 0;
 }
 
+if (options.LanguageWarning is not null)
+    Console.Error.WriteLine(options.LanguageWarning);
+
 try
 {
     var (apiKey, source) = ApiKeyLoader.Load();
@@ -52,7 +55,7 @@ try
     }
 
     Console.WriteLine($"Sending diff to Groq for review ({options.Model})...\n");
-    Console.WriteLine(await client.ReviewAsync(options.Model, diff));
+    Console.WriteLine(await client.ReviewAsync(options.Model, diff, options.Language));
     return 0;
 }
 catch (Exception ex)

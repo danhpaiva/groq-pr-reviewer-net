@@ -11,18 +11,6 @@ internal sealed class GroqClient : IDisposable
     private const string ChatCompletionsUrl = "https://api.groq.com/openai/v1/chat/completions";
     private const string ModelsUrl = "https://api.groq.com/openai/v1/models";
 
-    private const string SystemPrompt = """
-        You are a senior code reviewer. Analyse the pull request diff below and reply in English,
-        as bullet points organised into these sections:
-        - Bugs and correctness
-        - Security
-        - Performance
-        - Best practices / readability
-
-        Be concise and specific. If a section has nothing worth raising, write "Nothing to flag".
-        Ignore trivial formatting changes.
-        """;
-
     private readonly HttpClient _http;
 
     public GroqClient(string apiKey)
@@ -61,14 +49,14 @@ internal sealed class GroqClient : IDisposable
         return ids;
     }
 
-    public async Task<string> ReviewAsync(string model, string diff)
+    public async Task<string> ReviewAsync(string model, string diff, ReviewLanguage language)
     {
         var requestBody = new
         {
             model,
             messages = new object[]
             {
-                new { role = "system", content = SystemPrompt },
+                new { role = "system", content = BuildSystemPrompt(language) },
                 new { role = "user", content = $"Review the diff below:\n\n{FenceDiff(diff)}" },
             },
             temperature = 0.2,
@@ -90,6 +78,18 @@ internal sealed class GroqClient : IDisposable
             .GetProperty("content")
             .GetString() ?? "(empty response)";
     }
+
+    internal static string BuildSystemPrompt(ReviewLanguage language) => $"""
+        You are a senior code reviewer. Analyse the pull request diff below and reply in {language.Name},
+        as bullet points organised into these sections:
+        - {language.BugsAndCorrectness}
+        - {language.Security}
+        - {language.Performance}
+        - {language.BestPracticesAndReadability}
+
+        Be concise and specific. If a section has nothing worth raising, write "{language.NothingToFlag}".
+        Ignore trivial formatting changes.
+        """;
 
     /// <summary>
     /// A diff that touches Markdown files carries its own ``` sequences, which
